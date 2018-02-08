@@ -1,10 +1,4 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: thomas
- * Date: 05.02.18
- * Time: 12:18
- */
 
 include("/var/www/html/mantisbt-2.10.0/config/config_inc.php");
 
