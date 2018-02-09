@@ -1,15 +1,10 @@
 <?php
 
-include("/var/www/html/mantisbt-2.10.0/config/config_inc.php");
+include("./leifos_mantis_config.php");
 
 function collectBugs() {
 
     // Create and check connection
-    $servername = "localhost";
-    $username = "root";
-    $password = "123456";
-    $dbname = "bugtracker";
-
     $conn = mysqli_connect($servername, $username, $password, $dbname);
     if(!$conn) {
         die("Connection failed: " . mysqli_connect_error());
@@ -48,7 +43,7 @@ function collectBugs() {
                     echo "Email sent to " . $row_users ["realname"] . "<br>";
 
                 }catch(Exception $e){
-                    echo 'Message could not be sent. Mailer Error: ', $mail->ErrorInfo;
+                    echo 'Message could not be sent. Mailer Error: ', $e->ErrorInfo;
                 }
             } else {
                 echo "No bugs found for " . $row_users["realname"] . "<br>";
@@ -62,6 +57,6 @@ function collectBugs() {
     mysqli_close($conn);
 }
 
-echo collectBugs();
+collectBugs();
 
 ?>
