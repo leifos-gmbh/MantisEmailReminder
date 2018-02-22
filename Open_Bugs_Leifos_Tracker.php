@@ -1,26 +1,34 @@
 <?php
 
 include("./leifos_mantis_config.php");
+sendBugEmails($config);
 
-function collectBugs($servername, $username, $password, $dbname, $url) {
+/**
+ * Collect open bugs for Mantis users
+ *
+ * @param array $config
+ * @return array
+ */
+function collectBugs(array $config) {
 
     // Create and check connection
-    $conn = mysqli_connect($servername, $username, $password, $dbname);
+    $conn = mysqli_connect($config["servername"], $config["username"], $config["password"], $config["dbname"]);
     if(!$conn) {
         die("Connection failed: " . mysqli_connect_error());
     }
 
+    // Collecting all users (which have bugs) and their bugs in one array
     $all_bugs = array();
 
     // Select all active users except admin and users without email address
-    $sql_users = "SELECT * FROM mantis_user_table WHERE enabled='1' AND email <> '' AND email <> 'root@localhost'";
+    $sql_users = "SELECT * FROM mantis_user_table WHERE enabled='1' AND (email <> '' OR email <> NULL) AND email <> 'root@localhost'";
     $result_users = mysqli_query($conn, $sql_users);
 
     if (mysqli_num_rows($result_users) > 0) {
         while ($row_users = mysqli_fetch_assoc($result_users)) {
             $user_bug = array(
                 "email" => $row_users["email"],
-                "message" => "Hello " . $row_users["realname"] . ", \nYou have open bugs: \n\n"
+                "username" => $row_users["realname"]
             );
 
             // Select bugs with status not equal to 'resolved' or 'closed' for current user
@@ -33,9 +41,9 @@ function collectBugs($servername, $username, $password, $dbname, $url) {
             $bug_number = 1;
             if (mysqli_num_rows($result_users_bugs) > 0) {
                 while ($row_users_bug = mysqli_fetch_assoc($result_users_bugs)) {
-                    $message = $bug_number . ". " . $row_users_bug["projectname"] . ": " . $row_users_bug["bugname"] .
-                        " --> " . $url . $row_users_bug["bugid"] . "\n";
-                    $user_bug["message"] = $user_bug["message"] . $message;
+                    $user_bug["bugs"][$bug_number]["projectname"] = $row_users_bug["projectname"];
+                    $user_bug["bugs"][$bug_number]["bugname"] = $row_users_bug["bugname"];
+                    $user_bug["bugs"][$bug_number]["bugid"] = $row_users_bug["bugid"];
                     $bug_number++;
                 }
                 array_push($all_bugs, $user_bug);
@@ -50,23 +58,33 @@ function collectBugs($servername, $username, $password, $dbname, $url) {
     }
 
     mysqli_close($conn);
-
-    //print_r($all_bugs);
-    sendEmail($all_bugs);
+    return $all_bugs;
 }
 
-function sendEmail($all_bugs) {
+/**
+ * Creates a message per user which contains his open bugs and sends it as an email to him
+ *
+ * @param $config
+ */
+function sendBugEmails($config) {
+
+    $all_bugs = collectBugs($config);
 
     try {
 
         $subject = "[LeifosBugTracker] Your current open bugs";
         $from = "From: Leifos <noreply@leifos.com>";
 
-        foreach ($all_bugs as $user_bug) {
-            $to = $user_bug["email"];
-            $message = $user_bug["message"];
+        foreach ($all_bugs as $users) {
+            $to = $users["email"];
+            $message = "Hello " . $users["username"] . ", \nYou have open bugs: \n\n";
+            foreach ($users as $user_bugs) {
+                foreach ($user_bugs as $key=>$bugs) {
+                    $message = $message . $key. ". " . $bugs["projectname"] . ": " . $bugs["bugname"] . " --> " . $config["url"] . "/view.php?id=" . $bugs["bugid"] . "\n";
+                }
+            }
             mail($to, $subject, $message, $from);
-            echo "Email sent to " . $user_bug["email"] . "\n";
+            echo "Email sent to " . $users["email"] . "\n";
         }
         
     }catch(Exception $e){
@@ -74,7 +92,5 @@ function sendEmail($all_bugs) {
     }
 
 }
-
-collectBugs($servername, $username, $password, $dbname, $url);
 
 ?>
