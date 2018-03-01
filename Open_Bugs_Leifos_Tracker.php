@@ -28,7 +28,8 @@ function collectBugs(array $config) {
         while ($row_users = mysqli_fetch_assoc($result_users)) {
             $user_bug = array(
                 "email" => $row_users["email"],
-                "username" => $row_users["realname"]
+                "username" => $row_users["realname"],
+                "bugs" => array()
             );
 
             // Select bugs with status not equal to 'resolved' or 'closed' for current user
@@ -78,10 +79,8 @@ function sendBugEmails($config) {
         foreach ($all_bugs as $users) {
             $to = $users["email"];
             $message = "Hello " . $users["username"] . ", \nYou have open bugs: \n\n";
-            foreach ($users as $user_bugs) {
-                foreach ($user_bugs as $key=>$bugs) {
+            foreach ($users["bugs"] as $key=>$bugs) {
                     $message = $message . $key. ". " . $bugs["projectname"] . ": " . $bugs["bugname"] . " --> " . $config["url"] . "/view.php?id=" . $bugs["bugid"] . "\n";
-                }
             }
             mail($to, $subject, $message, $from);
             echo "Email sent to " . $users["email"] . "\n";
