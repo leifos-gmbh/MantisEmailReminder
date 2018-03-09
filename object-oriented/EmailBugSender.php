@@ -1,11 +1,10 @@
 <?php
 
-require("./leifos_mantis_config.php");
-include("./BugCollector.php");
+require_once("./leifos_mantis_config.php");
+include_once("./BugCollector.php");
 
-class EmailBugSender extends BugCollector
+class EmailBugSender
 {
-    private $conn;
     private $email_bugs;
     private $subject = "[LeifosBugTracker] Your current open bugs";
     private $from = "From: Leifos <noreply@leifos.com>";
@@ -20,10 +19,8 @@ class EmailBugSender extends BugCollector
      */
     function sendBugEmails($config)
     {
-        $bugCollection = new BugCollector();
-        $this->conn = $bugCollection->connectDB($config);
-        $this->email_bugs = $bugCollection->collectBugs($this->conn);
-        $bugCollection->closeDB($this->conn);
+        $bugCollection = new BugCollector($config);
+        $this->email_bugs = $bugCollection->collectBugs();
 
         try {
 
@@ -44,8 +41,5 @@ class EmailBugSender extends BugCollector
     }
 
 }
-
-$mail = new EmailBugSender();
-$mail->sendBugEmails($config);
 
 ?>

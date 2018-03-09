@@ -2,47 +2,49 @@
 
 class BugCollector
 {
+    private $config;
+    private $conn;
     // Collecting all users (which have bugs) and their bugs in one array
     private $all_bugs = array();
 
     /**
-     * Creates and checks connection
-     *
+     * BugCollector constructor.
      * @param array $config
-     * @return mysqli
      */
-    function connectDB(array $config)
+    function __construct(array $config)
     {
-        $conn = new mysqli($config["servername"], $config["username"], $config["password"], $config["dbname"]);
-        if(!$conn) {
-            die("Connection failed: " . $conn->connect_error);
-        }
-        else {
-            return $conn;
+        $this->config = $config;
+    }
+
+    /**
+     * Creates and checks connection
+     */
+    function connectDB()
+    {
+        $this->conn = new mysqli($this->config["servername"], $this->config["username"], $this->config["password"], $this->config["dbname"]);
+        if(!$this->conn) {
+            die("Connection failed: " . $this->conn->connect_error);
         }
     }
 
     /**
      * Closes the created connection
-     *
-     * @param $conn
      */
-    function closeDB($conn)
+    function closeDB()
     {
-        $conn->close();
+        $this->conn->close();
     }
 
     /**
      * Collects open bugs for Mantis users
-     *
-     * @param $conn
      * @return array
      */
-    function collectBugs($conn)
+    function collectBugs()
     {
+        $this->connectDB();
         // Select all active users except admin and users without email address
         $sql_users = "SELECT * FROM mantis_user_table WHERE enabled='1' AND (email <> '' OR email <> NULL) AND email <> 'root@localhost'";
-        $result_users = $conn->query($sql_users);
+        $result_users = $this->conn->query($sql_users);
 
         if ($result_users->num_rows > 0) {
             while ($row_users = $result_users->fetch_assoc()) {
@@ -57,7 +59,7 @@ class BugCollector
                                 FROM mantis_bug_table AS b, mantis_project_table AS p  
                                 WHERE b.project_id=p.id AND NOT ( b.status='80' OR b.status='90' ) AND b.handler_id=" . $row_users["id"] .
                     " ORDER BY b.project_id";
-                $result_users_bugs = $conn->query($sql_users_bugs);
+                $result_users_bugs = $this->conn->query($sql_users_bugs);
 
                 $bug_number = 1;
                 if ($result_users_bugs->num_rows > 0) {
@@ -78,6 +80,7 @@ class BugCollector
             echo "No users found \n";
         }
 
+        $this->closeDB();
         return $this->all_bugs;
     }
 
