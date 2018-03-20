@@ -7,6 +7,9 @@ $config = array(
     "dbname" => "your_db_name",
 
     // For Mantis Bug URL
-    "url" => "https://yourMantisURL.com"
+    "url" => "https://yourMantisURL.com",
+
+	// Support mail (gets unassigned bugs)
+	"support_email" => "support@leifos.de"
 );
 ?>

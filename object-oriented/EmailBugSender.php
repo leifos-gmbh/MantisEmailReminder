@@ -25,6 +25,12 @@ class EmailBugSender
         try {
 
             foreach ($this->email_bugs as $users) {
+            	// only send mails to leifos adresses
+            	if (!is_int(strpos($users["email"], "leifos")))
+				{
+					echo "No mail sent to " . $users["email"] . " (not a leifos adress) \n";
+					continue;
+				}
                 $this->to = $users["email"];
                 $this->message = "Hello " . $users["username"] . ", \nYou have open bugs: \n\n";
                 foreach ($users["bugs"] as $key=>$bugs) {
