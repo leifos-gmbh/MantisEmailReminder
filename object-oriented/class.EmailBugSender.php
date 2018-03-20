@@ -1,7 +1,7 @@
 <?php
 
 require_once("./leifos_mantis_config.php");
-include_once("./BugCollector.php");
+include_once("./class.BugCollector.php");
 
 class EmailBugSender
 {
@@ -10,7 +10,7 @@ class EmailBugSender
     private $from = "From: Leifos <noreply@leifos.com>";
     private $to;
     private $message;
-    private const urlIndex = "/view.php?id=";
+    private const URL_INDEX = "/view.php?id=";
 
     /**
      * Creates a message per user which contains his open bugs and sends it as an email to him
@@ -28,7 +28,7 @@ class EmailBugSender
                 $this->to = $users["email"];
                 $this->message = "Hello " . $users["username"] . ", \nYou have open bugs: \n\n";
                 foreach ($users["bugs"] as $key=>$bugs) {
-                    $this->message = $this->message . $key. ". " . $bugs["projectname"] . ": " . $bugs["bugname"] . " --> " . $config["url"] . EmailBugSender::urlIndex . $bugs["bugid"] . "\n";
+                    $this->message = $this->message . $key. ". " . $bugs["projectname"] . ": " . $bugs["bugname"] . " --> " . $config["url"] . EmailBugSender::URL_INDEX . $bugs["bugid"] . "\n";
                 }
                 mail($this->to, $this->subject, $this->message, $this->from);
                 echo "Email sent to " . $users["email"] . "\n";
