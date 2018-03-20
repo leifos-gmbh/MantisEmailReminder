@@ -10,7 +10,7 @@ class EmailBugSender
     private $from = "From: Leifos <noreply@leifos.com>";
     private $to;
     private $message;
-    private const urlIndex = "/view.php?id=";
+    const urlIndex = "/view.php?id=";
 
     /**
      * Creates a message per user which contains his open bugs and sends it as an email to him
