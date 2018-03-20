@@ -25,10 +25,10 @@ class EmailBugSender
         try {
 
             foreach ($this->email_bugs as $users) {
-            	// only send mails to leifos adresses
+            	// only send mails to leifos addresses
             	if (!is_int(strpos($users["email"], "leifos")))
 				{
-					echo "No mail sent to " . $users["email"] . " (not a leifos adress) \n";
+					echo "No mail sent to " . $users["email"] . " (not a leifos address) \n";
 					continue;
 				}
                 $this->to = $users["email"];

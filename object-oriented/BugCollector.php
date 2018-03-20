@@ -58,7 +58,7 @@ class BugCollector
 		$this->addUserBugs(array(
 			"email" => $this->config["support_email"],
 			"username" => "Support Team",
-			"id" => null,
+			"id" => "0",
 		));
 
         $this->closeDB();
