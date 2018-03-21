@@ -8,7 +8,7 @@ class BugCollector
     private $all_bugs = array();
 
     /**
-     * BugCollector constructor.
+     * class.BugCollector constructor.
      * @param array $config
      */
     function __construct(array $config)
