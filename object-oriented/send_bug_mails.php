@@ -1,6 +1,6 @@
 <?php
 
-chdir('.');
+chdir(__DIR__);
 
 include_once("./class.EmailBugSender.php");
 

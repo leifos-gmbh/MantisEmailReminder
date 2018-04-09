@@ -4,6 +4,8 @@ class BugCollector
 {
     private $config;
     private $conn;
+    private $prefix;
+    private $suffix;
     // Collecting all users (which have bugs) and their bugs in one array
     private $all_bugs = array();
 
@@ -35,15 +37,49 @@ class BugCollector
         $this->conn->close();
     }
 
+    function setPrefix()
+    {
+        if (!empty($this->config["prefix"])) {
+            $this->prefix = trim($this->config["prefix"], " _");
+            if ($this->prefix != "") {
+                $this->prefix = $this->prefix . "_";
+            }
+            echo "Replaced database prefix from config_inc.php\n";
+        }
+        else
+        {
+            $this->prefix = "mantis_";
+            echo "No database prefix found in config_inc.php. Use predefined value instead.\n";
+        }
+    }
+
+    function setSuffix()
+    {
+        if (!empty($this->config["suffix"])) {
+            $this->suffix = trim($this->config["suffix"], " _");
+            if ($this->suffix != "") {
+                $this->suffix = "_" . $this->suffix;
+            }
+            echo "Replaced database suffix from config_inc.php\n";
+        }
+        else
+        {
+            $this->suffix = "_table";
+            echo "No database suffix found in config_inc.php. Use predefined value instead.\n";
+        }
+    }
+
     /**
      * Collects open bugs for Mantis users
      * @return array
      */
     function collectBugs()
     {
+        $this->setPrefix();
+        $this->setSuffix();
         $this->connectDB();
         // Select all active users except admin and users without email address
-        $sql_users = "SELECT * FROM mantis_user_table WHERE enabled='1' AND (email <> '' OR email <> NULL) AND email <> 'root@localhost'";
+        $sql_users = "SELECT * FROM " . $this->prefix . "user" . $this->suffix . " WHERE enabled='1' AND (email <> '' OR email <> NULL) AND email <> 'root@localhost'";
         $result_users = $this->conn->query($sql_users);
 
         if ($result_users->num_rows > 0) {
@@ -54,7 +90,7 @@ class BugCollector
             echo "No users found \n";
         }
 
-        // add support user for bugs not being adressed
+        // add support user for bugs not being addressed
 		$this->addUserBugs(array(
 			"email" => $this->config["support_email"],
 			"username" => "Support Team",
@@ -84,7 +120,7 @@ class BugCollector
 
 		// Select bugs with status not equal to 'resolved' or 'closed' for current user
 		$sql_users_bugs = "SELECT p.name AS projectname, b.summary AS bugname, b.id AS bugid, b.project_id, p.id 
-                                FROM mantis_bug_table AS b, mantis_project_table AS p  
+                                FROM " . $this->prefix . "bug" . $this->suffix . " AS b, " . $this->prefix . "project" . $this->suffix . " AS p  
                                 WHERE b.project_id=p.id AND NOT ( b.status='80' OR b.status='90' ) AND ".$id_str.
 			" ORDER BY b.project_id";
 		$result_users_bugs = $this->conn->query($sql_users_bugs);
@@ -100,7 +136,6 @@ class BugCollector
 			array_push($this->all_bugs, $user_bug);
 		}
     }
-
 
 }
 
